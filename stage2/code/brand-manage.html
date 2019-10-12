@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>品牌管理案例</title>
+		<link href="./lib/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+		<script src="./lib/vue.js"></script>
+	</head>
+	<body>
+		<div id="app">
+
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">添加品牌</h3>
+				</div>
+				<div class="panel-body form-inline">
+					<label>
+						ID:
+						<input type="text" class="form-control" v-model="id">
+					</label>
+					<label>
+						NAME:
+						<input type="text" class="form-control" v-model="name" @keyup.enter="add">
+					</label>
+					<input type="button" value ="添加" class="btn btn-primary" @click="add">
+					<label>
+						搜索名称关键字:
+						<input type="text" class="form-control" v-model="keywords" v-focus v-color="'red'">
+					</label>
+
+				</div>
+			</div>
+
+			<table class="table table-bordered table-hover table-striped">
+				<thead>
+					<tr>
+						<td>ID</td>
+						<td>Name</td>
+						<td>Ctime</td>
+						<td>Operation</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="item in search(keywords)" :key="item.id">
+						<td>{{ item.id }}</td>
+						<td>{{ item.name }}</td>
+						<td>{{ item.ctime | dateFormate() }}</td>
+						<td><a href="" @click.prevent="del(item.id)">删除</a></td>
+					</tr>
+					
+				</tbody>
+			</table>
+		</div>
+
+
+		<script>
+
+			//创建全局过滤器，进行时间的格式化
+			Vue.filter('dateFormate',function(dateStr,pattern=''){
+				var dt = new Date(dateStr)
+
+				var y = dt.getFullYear()
+				var m = (dt.getMonth() + 1).toString().padStart(2,'0')
+				var d = (dt.getDate()).toString().padStart(2,'0')
+				
+				if(pattern && pattern.toLowerCase() === 'yyyy-mm-dd'){
+					return `${y}-${m}-${d}`
+				} else {
+					var hours = (dt.getHours()).toString().padStart(2,'0')
+					var minutes = (dt.getMinutes()).toString().padStart(2,'0')
+					var seconds = (dt.getSeconds()).toString().padStart(2,'0')
+
+					return `${y}-${m}-${d} ${hours}:${minutes}:${seconds}`
+				}
+			})
+
+			//创建自定义指令v-focus
+			Vue.directive('focus',{
+				bind: function(el){},
+
+				inserted: function(el){
+					el.focus()
+				},
+
+				update: function(el){}
+			})
+
+			//自定义一个设置字体颜色的指令
+			Vue.directive('color',{
+				bind: function(el,binding){
+					el.style.color = binding.value
+				}
+			})
+
+
+			var vm = new Vue({
+				el: '#app',
+				data: {
+					id: '',
+					name: '',
+					keywords: '',
+					list: [
+						{ id: 1, name: '奔驰', ctime: new Date() },
+						{ id: 2, name: '宝马', ctime: new Date() }
+
+					]
+				},
+				methods: {
+					add(){
+						var car = {
+							id: this.id,
+							name: this.name,
+							ctime: new Date()
+						}
+
+						this.list.push(car)
+
+						this.id = this.name = ''
+					},
+					del(id){
+						//根据id找到元素下标
+						var index = this.list.findIndex(item => {
+							if(item.id == id){
+								return true
+							}
+						})
+
+						//删除该元素
+						this.list.splice(index, 1)
+					},
+					search(keywords){//根据keywords，进行数据的搜索
+						var newList = []
+						this.list.forEach( item => {
+							if( item.name.indexOf(keywords) != -1 )
+								newList.push(item)
+						})
+
+						return newList
+
+					}
+				}
+			})
+		</script>
+	</body>
+</html>
